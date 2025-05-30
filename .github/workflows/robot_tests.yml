@@ -40,7 +40,8 @@ jobs:
           wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
           sudo dpkg -i google-chrome-stable_current_amd64.deb || sudo apt-get install -f -y
         fi
-        google-chrome-stable --version
+        ls -lh /usr/bin/google-chrome-stable
+        google-chrome-stable --version || echo "Erro ao obter a versão do Chrome"
 
     - name: Testar execução do Google Chrome
       run: |
