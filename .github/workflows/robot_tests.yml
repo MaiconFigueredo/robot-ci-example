@@ -32,6 +32,14 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y libgtk-4-1 libvpx9 libevent-2.1-7 libopus0 libgstreamer-plugins-base1.0-0 woff2
 
+    - name: Instalar ChromeDriver manualmente
+      run: |
+       CHROMEDRIVER_VERSION=$(curl -s "https://chromedriver.storage.googleapis.com/LATEST_RELEASE")
+       wget -q "https://chromedriver.storage.googleapis.com/$CHROMEDRIVER_VERSION/chromedriver_linux64.zip"
+       unzip chromedriver_linux64.zip
+       sudo mv chromedriver /usr/local/bin/
+       sudo chmod +x /usr/local/bin/chromedriver    
+
     - name: Verificar e instalar Google Chrome
       run: |
         if ! command -v google-chrome-stable &> /dev/null; then
