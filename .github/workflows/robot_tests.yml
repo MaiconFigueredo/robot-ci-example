@@ -54,15 +54,19 @@ jobs:
         which firefox || echo "Firefox não encontrado!"
         firefox --version || echo "Erro ao obter a versão do Firefox"
 
-    - name: Encerrar processos antigos de navegador antes do teste
+    - name: Limpar cache e perfis antigos do Firefox
       run: |
-        pkill -f "firefox" || true
-        pkill -f "geckodriver" || true
         rm -rf ~/.mozilla/firefox/
+        rm -rf /tmp/firefox-*
+
+    - name: Criar perfil temporário do Firefox
+      run: |
+        mkdir -p /tmp/firefox-profile-${RANDOM}
+        echo "FIREFOX_PROFILE_DIR=/tmp/firefox-profile-${RANDOM}" >> $GITHUB_ENV
 
     - name: Testar execução segura do Firefox
       run: |
-        firefox --headless --safe-mode --disable-gpu --remote-debugging-port=9222 http://example.com & sleep 5
+        firefox --headless --safe-mode --disable-gpu --disable-extensions --remote-debugging-port=9222 http://example.com & sleep 5
         pkill firefox
 
     - name: Instalar dependências do Python
@@ -70,4 +74,4 @@ jobs:
         pip install -r requirements.txt
 
     - name: Rodar testes do Robot Framework com Firefox
-      run: robot --variable BROWSER:firefox tests/
+      run: robot --variable BROWSER:firefox --variable FIREFOX_PROFILE:${FIREFOX_PROFILE_DIR} tests/
