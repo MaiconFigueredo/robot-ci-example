@@ -19,11 +19,22 @@ jobs:
       with:
         python-version: '3.10'
 
-    - name: Instalar dependências
+    - name: Configurar cache do pip
+      uses: actions/cache@v2
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+
+    - name: Instalar pacotes do sistema
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libgtk-4-1 libwoff2-1 libvpx9 libevent-2.1-7 libopus0 libgstreamer-plugins-base1.0-0
+
+    - name: Instalar dependências do Python
       run: |
         pip install -r requirements.txt
-        pip install robotframework-browser
-        rfbrowser init
 
-    - name: Rodar testes
+    - name: Rodar testes do Robot Framework
       run: robot tests/
