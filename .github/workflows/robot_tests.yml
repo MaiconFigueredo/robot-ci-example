@@ -32,44 +32,27 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y libgtk-4-1 libvpx9 libevent-2.1-7 libopus0 libgstreamer-plugins-base1.0-0 woff2
 
-    - name: Instalar Google Chrome
+    - name: Instalar Firefox e GeckoDriver
       run: |
-        if ! command -v google-chrome-stable &> /dev/null; then
-          echo "Google Chrome não está instalado. Instalando agora..."
-          sudo apt-get update
-          wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-          sudo dpkg -i google-chrome-stable_current_amd64.deb || sudo apt-get install -f -y
-        fi
-        ls -lh /usr/bin/google-chrome-stable
-        google-chrome-stable --version || echo "Erro ao obter a versão do Chrome"
+        sudo apt-get install -y firefox
+        wget -q https://github.com/mozilla/geckodriver/releases/latest/download/geckodriver-linux64.tar.gz
+        tar -xzf geckodriver-linux64.tar.gz
+        sudo mv geckodriver /usr/local/bin/
+        sudo chmod +x /usr/local/bin/geckodriver
 
-    - name: Verificar instalação do Google Chrome
+    - name: Verificar instalação do Firefox
       run: |
-        which google-chrome-stable || echo "Google Chrome não encontrado!"
+        which firefox || echo "Firefox não encontrado!"
+        firefox --version || echo "Erro ao obter a versão do Firefox"
 
-    - name: Remover ChromeDriver antigo
+    - name: Testar execução do Firefox
       run: |
-        sudo rm -rf /usr/local/bin/chromedriver
-        sudo rm -rf chromedriver_linux64.zip
-
-    - name: Instalar ChromeDriver versão correta
-      run: |
-        CHROME_VERSION=$(google-chrome-stable --version | awk '{print $3}')
-        CHROMEDRIVER_VERSION=$(curl -s "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_$CHROME_VERSION")
-        wget -q "https://chromedriver.storage.googleapis.com/$CHROMEDRIVER_VERSION/chromedriver_linux64.zip"
-        unzip chromedriver_linux64.zip
-        sudo mv chromedriver /usr/local/bin/
-        sudo chmod +x /usr/local/bin/chromedriver
-
-    - name: Testar execução do Chrome
-      run: |
-        google-chrome-stable --version
-        google-chrome-stable --headless --no-sandbox --disable-dev-shm-usage --remote-debugging-port=9222 http://example.com & sleep 5
-        pkill chrome
+        firefox --headless --remote-debugging-port=9222 http://example.com & sleep 5
+        pkill firefox
 
     - name: Instalar dependências do Python
       run: |
         pip install -r requirements.txt
 
-    - name: Rodar testes do Robot Framework
-      run: robot --variable BROWSER:chrome tests/
+    - name: Rodar testes do Robot Framework com Firefox
+      run: robot --variable BROWSER:firefox tests/
