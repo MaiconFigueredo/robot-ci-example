@@ -32,27 +32,24 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y libgtk-4-1 libvpx9 libevent-2.1-7 libopus0 libgstreamer-plugins-base1.0-0 woff2
 
-    - name: Instalar Google Chrome e WebDriver
+    - name: Atualizar ChromeDriver para versão correta
       run: |
-        sudo apt-get update
-        sudo apt-get install -y wget unzip
-        wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-        sudo dpkg -i google-chrome-stable_current_amd64.deb
-        sudo apt-get install -f
-        CHROMEDRIVER_VERSION=$(curl -s https://chromedriver.storage.googleapis.com/LATEST_RELEASE)
-        wget -q https://chromedriver.storage.googleapis.com/$CHROMEDRIVER_VERSION/chromedriver_linux64.zip
+        CHROME_VERSION=$(google-chrome --version | grep -oP '\d+\.\d+\.\d+\.\d+')
+        CHROMEDRIVER_VERSION=$(curl -s "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_$CHROME_VERSION")
+        wget -q "https://chromedriver.storage.googleapis.com/$CHROMEDRIVER_VERSION/chromedriver_linux64.zip"
         unzip chromedriver_linux64.zip
         sudo mv chromedriver /usr/local/bin/
         sudo chmod +x /usr/local/bin/chromedriver
 
-    - name: Verificar instalação do WebDriver e Chrome
+    - name: Testar execução do Chrome
       run: |
-        which chromedriver || echo "Chromedriver não encontrado"
-        which google-chrome || echo "Google Chrome não encontrado"
+        google-chrome --version
+        google-chrome --headless --disable-gpu --remote-debugging-port=9222 http://example.com & sleep 5
+        pkill chrome
 
     - name: Instalar dependências do Python
       run: |
         pip install -r requirements.txt
 
     - name: Rodar testes do Robot Framework
-      run: robot --variable BROWSER:chrome tests/
+      run: robot --variable BROWSER:chrome --variable HEADLESS:True tests/
