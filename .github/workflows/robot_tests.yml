@@ -58,14 +58,11 @@ jobs:
       run: |
         pkill -f "firefox" || true
         pkill -f "geckodriver" || true
+        rm -rf ~/.mozilla/firefox/
 
-    - name: Testar execução do GeckoDriver
+    - name: Testar execução segura do Firefox
       run: |
-        geckodriver --version || echo "Erro ao iniciar GeckoDriver"
-
-    - name: Testar execução do Firefox
-      run: |
-        firefox --headless --no-sandbox --disable-dev-shm-usage --remote-debugging-port=9222 http://example.com & sleep 5
+        firefox --headless --safe-mode --disable-gpu --remote-debugging-port=9222 http://example.com & sleep 5
         pkill firefox
 
     - name: Instalar dependências do Python
@@ -73,4 +70,4 @@ jobs:
         pip install -r requirements.txt
 
     - name: Rodar testes do Robot Framework com Firefox
-      run: robot --variable BROWSER:firefox --variable USER_DATA_DIR:/tmp/firefox-${RANDOM} tests/
+      run: robot --variable BROWSER:firefox tests/
