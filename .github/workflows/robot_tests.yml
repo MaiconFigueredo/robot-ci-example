@@ -47,20 +47,16 @@ jobs:
       run: |
         which google-chrome-stable || echo "Google Chrome não encontrado!"
 
-    - name: Extração manual da versão do Chrome
+    - name: Remover ChromeDriver antigo
       run: |
-        CHROME_PATH=$(which google-chrome-stable || echo "/usr/bin/google-chrome-stable")
-        if [ -f "$CHROME_PATH" ]; then
-          CHROME_VERSION=$($CHROME_PATH --version | awk '{print $3}')
-          echo "Versão do Google Chrome: $CHROME_VERSION"
-        else
-          echo "Erro: Google Chrome não encontrado!"
-          exit 1
-        fi
+        sudo rm -rf /usr/local/bin/chromedriver
+        sudo rm -rf chromedriver_linux64.zip
 
-    - name: Instalar ChromeDriver versão fixa
+    - name: Instalar ChromeDriver versão correta
       run: |
-        wget -q https://chromedriver.storage.googleapis.com/114.0.5735.90/chromedriver_linux64.zip
+        CHROME_VERSION=$(google-chrome-stable --version | awk '{print $3}')
+        CHROMEDRIVER_VERSION=$(curl -s "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_$CHROME_VERSION")
+        wget -q "https://chromedriver.storage.googleapis.com/$CHROMEDRIVER_VERSION/chromedriver_linux64.zip"
         unzip chromedriver_linux64.zip
         sudo mv chromedriver /usr/local/bin/
         sudo chmod +x /usr/local/bin/chromedriver
@@ -68,7 +64,7 @@ jobs:
     - name: Testar execução do Chrome
       run: |
         google-chrome-stable --version
-        google-chrome-stable --headless --disable-gpu --remote-debugging-port=9222 http://example.com & sleep 5
+        google-chrome-stable --headless --no-sandbox --disable-dev-shm-usage --remote-debugging-port=9222 http://example.com & sleep 5
         pkill chrome
 
     - name: Instalar dependências do Python
