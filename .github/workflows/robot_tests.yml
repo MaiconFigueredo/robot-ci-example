@@ -42,9 +42,14 @@ jobs:
         fi
         google-chrome-stable --version
 
+    - name: Testar execução do Google Chrome
+      run: |
+        which google-chrome-stable
+        google-chrome-stable --version || echo "Erro ao obter a versão do Chrome"
+
     - name: Atualizar ChromeDriver para versão compatível
       run: |
-        CHROME_VERSION=$(google-chrome-stable --version | sed 's/Google Chrome //' | tr -d '[:space:]')
+        CHROME_VERSION=$(google-chrome-stable --version | cut -d' ' -f3)
         CHROMEDRIVER_VERSION=$(curl -s "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_$CHROME_VERSION")
         wget -q "https://chromedriver.storage.googleapis.com/$CHROMEDRIVER_VERSION/chromedriver_linux64.zip"
         unzip chromedriver_linux64.zip
