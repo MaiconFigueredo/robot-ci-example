@@ -32,9 +32,15 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y libgtk-4-1 libvpx9 libevent-2.1-7 libopus0 libgstreamer-plugins-base1.0-0 woff2
 
-    - name: Atualizar ChromeDriver para versão correta
+    - name: Instalar Google Chrome
       run: |
-        CHROME_VERSION=$(google-chrome --version | grep -oP '\d+\.\d+\.\d+\.\d+')
+        sudo apt-get update
+        wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+        sudo dpkg -i google-chrome-stable_current_amd64.deb || sudo apt-get install -f -y
+
+    - name: Atualizar ChromeDriver para versão compatível
+      run: |
+        CHROME_VERSION=$(google-chrome --version | awk '{print $3}')
         CHROMEDRIVER_VERSION=$(curl -s "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_$CHROME_VERSION")
         wget -q "https://chromedriver.storage.googleapis.com/$CHROMEDRIVER_VERSION/chromedriver_linux64.zip"
         unzip chromedriver_linux64.zip
@@ -52,4 +58,4 @@ jobs:
         pip install -r requirements.txt
 
     - name: Rodar testes do Robot Framework
-      run: robot --variable BROWSER:chrome --variable HEADLESS:True tests/
+      run: robot --variable BROWSER:chrome tests/
