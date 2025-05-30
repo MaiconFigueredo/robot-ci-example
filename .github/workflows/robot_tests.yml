@@ -32,22 +32,31 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y libgtk-4-1 libvpx9 libevent-2.1-7 libopus0 libgstreamer-plugins-base1.0-0 woff2
 
-    - name: Instalar Firefox e GeckoDriver
+    - name: Instalar Firefox sem snap
       run: |
+        sudo apt-get remove --purge -y firefox snapd
+        sudo add-apt-repository -y ppa:mozillateam/ppa
+        echo 'Package: *' | sudo tee /etc/apt/preferences.d/firefox
+        echo 'Pin: release o=LP-PPA-mozillateam' | sudo tee -a /etc/apt/preferences.d/firefox
+        echo 'Pin-Priority: 501' | sudo tee -a /etc/apt/preferences.d/firefox
+        sudo apt-get update
         sudo apt-get install -y firefox
+
+    - name: Instalar GeckoDriver
+      run: |
         wget -q https://github.com/mozilla/geckodriver/releases/latest/download/geckodriver-linux64.tar.gz
         tar -xzf geckodriver-linux64.tar.gz
         sudo mv geckodriver /usr/local/bin/
         sudo chmod +x /usr/local/bin/geckodriver
 
-    - name: Verificar instalação do Firefox
+    - name: Validar instalação do Firefox
       run: |
         which firefox || echo "Firefox não encontrado!"
         firefox --version || echo "Erro ao obter a versão do Firefox"
 
     - name: Testar execução do Firefox
       run: |
-        firefox --headless --remote-debugging-port=9222 http://example.com & sleep 5
+        firefox --headless --no-sandbox --disable-dev-shm-usage --remote-debugging-port=9222 http://example.com & sleep 5
         pkill firefox
 
     - name: Instalar dependências do Python
